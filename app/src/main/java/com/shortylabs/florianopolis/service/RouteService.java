@@ -90,7 +90,7 @@ public class RouteService extends IntentService {
         Log.d(TAG, "sendResult returning RESULT");
         Message msg = Message.obtain();
         Bundle data = new Bundle();
-        data.putString(EXTRA_RESULTS_KEY,
+        data.putString(EXTRA_ROUTES_BY_STOP_RESULTS_KEY,
                 result);
 
         // Make the Bundle the "data" of the Message.
