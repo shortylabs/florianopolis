@@ -6,7 +6,9 @@ import java.util.List;
 /**
  * Created by Jeri on 12/6/14.
  */
-public class Routes {
-    public List<Route> rows = new ArrayList<Route>();
+public class Departures {
+
+    public List<Departure> rows = new ArrayList<Departure>();
     public Integer rowsAffected;
+
 }

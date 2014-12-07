@@ -16,8 +16,8 @@ import android.widget.EditText;
 import android.widget.ListView;
 
 import com.google.gson.Gson;
+import com.shortylabs.florianopolis.model.Route;
 import com.shortylabs.florianopolis.model.Routes;
-import com.shortylabs.florianopolis.model.Row;
 import com.shortylabs.florianopolis.service.RouteService;
 
 import java.lang.ref.WeakReference;
@@ -28,11 +28,13 @@ import java.util.List;
  */
 public class RouteListFragment extends Fragment {
 
-
-
     private EditText mStreetNameEdit;
     private Button mSearchButton;
     private ListView mRouteListView;
+    private static final String ROUTES_RESULT = "routes";
+    private static final String STREET_NAME = "streetName";
+    private String mJsonResult;
+    private String mStreetName;
 
 
     private static final String TAG = RouteListFragment.class.getSimpleName();
@@ -47,6 +49,10 @@ public class RouteListFragment extends Fragment {
 
 
     public RouteListFragment() {
+    }
+
+    public void setJsonResult (String json) {
+        this.mJsonResult = json;
     }
 
     @Override
@@ -95,11 +101,33 @@ public class RouteListFragment extends Fragment {
         return rootView;
     }
 
-    public void runService() {
+    @Override
+    public void onActivityCreated(Bundle savedInstanceState) {
+        super.onActivityCreated(savedInstanceState);
+        if (savedInstanceState != null) {
+            mStreetName = savedInstanceState.getString(STREET_NAME);
+            mJsonResult = savedInstanceState.getString(ROUTES_RESULT);
+            if (mStreetName != null) {
+                mStreetNameEdit.setText(mStreetName);
+            }
+            if (mJsonResult != null) {
+                showResults();
+            }
+        }
+    }
 
+    @Override
+    public void onSaveInstanceState(Bundle outState) {
+        super.onSaveInstanceState(outState);
+        outState.putString(STREET_NAME, mStreetName);
+        outState.putString(ROUTES_RESULT, mJsonResult);
+    }
+
+    public void runService() {
+        mStreetName = mStreetNameEdit.getText().toString().trim();
         Intent intent =
                 RouteService.makeIntent(getActivity(),
-                        handler, mStreetNameEdit.getText().toString().trim());
+                        handler, mStreetName);
 
         getActivity().startService(intent);
     }
@@ -109,13 +137,13 @@ public class RouteListFragment extends Fragment {
     }
 
 
-    private void showResults(String json) {
+    private void showResults() {
 
-        Log.d(TAG, json);
+        Log.d(TAG, mJsonResult);
         Routes routes;
         Gson gson = new Gson();
-        routes = gson.fromJson(json, Routes.class);
-        List<Row> routeList = null;
+        routes = gson.fromJson(mJsonResult, Routes.class);
+        List<Route> routeList = null;
         if (routes != null) {
             routeList = routes.rows;
         }
@@ -167,7 +195,8 @@ public class RouteListFragment extends Fragment {
                 Bundle data = msg.getData();
                 String json;
                 if (data.containsKey(RouteService.EXTRA_ROUTES_BY_STOP_RESULTS_KEY)) {
-                    routeListFragment.showResults(data.getString(RouteService.EXTRA_ROUTES_BY_STOP_RESULTS_KEY));
+                    routeListFragment.setJsonResult(data.getString(RouteService.EXTRA_ROUTES_BY_STOP_RESULTS_KEY));
+                    routeListFragment.showResults();
 
                 }
 

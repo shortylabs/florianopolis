@@ -1,6 +1,7 @@
 package com.shortylabs.florianopolis;
 
 import android.content.Context;
+import android.content.Intent;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Message;
@@ -10,9 +11,8 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ArrayAdapter;
 import android.widget.TextView;
-import android.widget.Toast;
 
-import com.shortylabs.florianopolis.model.Row;
+import com.shortylabs.florianopolis.model.Route;
 
 import java.lang.ref.WeakReference;
 import java.util.List;
@@ -20,10 +20,10 @@ import java.util.List;
 /**
  * Created by Jeri on 12/6/14.
  */
-public class RouteListAdapter extends ArrayAdapter<Row> {
+public class RouteListAdapter extends ArrayAdapter<Route> {
 
     private static final String TAG =  RouteListAdapter.class.getSimpleName();
-    private List<Row> mList;
+    private List<Route> mList;
     private final RouteListFragment mRouteListFragment;
     /**
      * Instantiate the MessengerHandler, passing in the
@@ -31,7 +31,7 @@ public class RouteListAdapter extends ArrayAdapter<Row> {
      */
     private MessengerHandler handler;
 
-    public RouteListAdapter(RouteListFragment fragment, List<Row> list) {
+    public RouteListAdapter(RouteListFragment fragment, List<Route> list) {
         super(fragment.getActivity(), 0, list);
         this.mRouteListFragment = fragment;
         this.mList = list;
@@ -47,7 +47,7 @@ public class RouteListAdapter extends ArrayAdapter<Row> {
         final Context context = parent.getContext();
 
         /** Set data to your Views. */
-        final Row item = mList.get(position);
+        final Route item = mList.get(position);
 
         if(rowView == null) {
 
@@ -66,7 +66,12 @@ public class RouteListAdapter extends ArrayAdapter<Row> {
         viewHolder.routeNameTextView.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                Toast.makeText(getContext(), "detail goes here", Toast.LENGTH_SHORT).show();
+//                Toast.makeText(getContext(), "detail goes here", Toast.LENGTH_SHORT).show();
+                Intent intent = new Intent(getContext(), RouteDetailActivity.class);
+                intent.putExtra(RouteDetailFragment.EXTRA_ROUTE_ID, item.id);
+                intent.putExtra(RouteDetailFragment.EXTRA_ROUTE_NAME, item.longName);
+                mRouteListFragment.startActivity(intent);
+
             }
         });
 

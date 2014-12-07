@@ -6,7 +6,8 @@ import java.util.List;
 /**
  * Created by Jeri on 12/6/14.
  */
-public class Routes {
-    public List<Route> rows = new ArrayList<Route>();
+public class Stops {
+    public List<Stop> rows = new ArrayList<Stop>();
     public Integer rowsAffected;
+
 }

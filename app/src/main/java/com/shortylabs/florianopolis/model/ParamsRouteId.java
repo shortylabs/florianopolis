@@ -7,5 +7,9 @@ public class ParamsRouteId {
 
     public RouteIdParam params;
 
+    public ParamsRouteId(Integer routeId) {
+        params = new RouteIdParam(routeId);
+    }
+
 
 }
