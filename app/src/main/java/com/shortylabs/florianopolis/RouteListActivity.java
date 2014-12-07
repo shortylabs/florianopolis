@@ -1,12 +1,19 @@
 package com.shortylabs.florianopolis;
 
 import android.app.Activity;
+import android.net.http.HttpResponseCache;
 import android.os.Bundle;
+import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
 
+import java.io.File;
+import java.io.IOException;
+
 
 public class RouteListActivity extends Activity {
+
+    private static final String TAG = RouteListActivity.class.getSimpleName();
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -14,9 +21,10 @@ public class RouteListActivity extends Activity {
         setContentView(R.layout.activity_route_list);
         if (savedInstanceState == null) {
             getFragmentManager().beginTransaction()
-                    .add(R.id.container, new RouteListFragment())
+                    .add(R.id.route_list_container, new RouteListFragment())
                     .commit();
         }
+
     }
 
 

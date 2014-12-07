@@ -14,7 +14,7 @@ public class SundayActivity extends Activity {
         setContentView(R.layout.activity_sunday);
         if (savedInstanceState == null) {
             getFragmentManager().beginTransaction()
-                    .add(R.id.container, new SundayFragment())
+                    .add(R.id.route_detail_container, new SundayFragment())
                     .commit();
         }
     }

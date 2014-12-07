@@ -1,6 +1,7 @@
 package com.shortylabs.florianopolis;
 
 import android.app.Fragment;
+import android.content.Context;
 import android.content.Intent;
 import android.os.Bundle;
 import android.os.Handler;
@@ -11,17 +12,17 @@ import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.view.inputmethod.InputMethodManager;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.ListView;
+import android.widget.Toast;
 
 import com.google.gson.Gson;
-import com.shortylabs.florianopolis.model.Route;
 import com.shortylabs.florianopolis.model.Routes;
 import com.shortylabs.florianopolis.service.RouteService;
 
 import java.lang.ref.WeakReference;
-import java.util.List;
 
 /**
  * A placeholder fragment containing a simple view.
@@ -64,7 +65,7 @@ public class RouteListFragment extends Fragment {
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
             Bundle savedInstanceState) {
-        View rootView = inflater.inflate(R.layout.fragment_route_list, container, false);
+        final View rootView = inflater.inflate(R.layout.fragment_route_list, container, false);
 
 
         mStreetNameEdit = (EditText) rootView.findViewById(R.id.street_name_edit);
@@ -85,19 +86,23 @@ public class RouteListFragment extends Fragment {
             }
         });
 
-
         mSearchButton = (Button) rootView.findViewById(R.id.search_button);
 
 
         mSearchButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
+                InputMethodManager
+                        mgr=(InputMethodManager)getActivity().getSystemService(Context.INPUT_METHOD_SERVICE);
+                mgr.hideSoftInputFromWindow(mStreetNameEdit.getWindowToken(), 0);
                 runService();
             }
         });
 
         mRouteListView =  (ListView)rootView.findViewById(R.id.route_listView);
         mRouteListView.setChoiceMode(ListView.CHOICE_MODE_SINGLE);
+
+
         return rootView;
     }
 
@@ -143,16 +148,22 @@ public class RouteListFragment extends Fragment {
         Routes routes;
         Gson gson = new Gson();
         routes = gson.fromJson(mJsonResult, Routes.class);
-        List<Route> routeList = null;
-        if (routes != null) {
-            routeList = routes.rows;
+        if (routes != null && routes.rows.size() > 0) {
+            mAdapter = new RouteListAdapter(this,
+                    routes.rows);
+
+            mRouteListView.setAdapter(mAdapter);
+            mAdapter.notifyDataSetChanged();
+
         }
+        else {
 
-        mAdapter = new RouteListAdapter(this,
-                routeList);
+            int formatId = R.string.format_no_results;
 
-        mRouteListView.setAdapter(mAdapter);
-        mAdapter.notifyDataSetChanged();
+            Toast.makeText(getActivity(),
+                    String.format(getString(formatId, mStreetName)),
+                    Toast.LENGTH_SHORT).show();
+        }
 
 
 

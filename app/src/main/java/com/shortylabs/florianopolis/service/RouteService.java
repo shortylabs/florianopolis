@@ -4,6 +4,7 @@ import android.app.IntentService;
 import android.content.Context;
 import android.content.Intent;
 import android.net.Uri;
+import android.net.http.HttpResponseCache;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Message;
@@ -13,6 +14,7 @@ import android.util.Base64;
 import android.util.Log;
 
 import com.google.gson.Gson;
+import com.shortylabs.florianopolis.FlorianopolisApp;
 import com.shortylabs.florianopolis.model.ParamsRouteId;
 import com.shortylabs.florianopolis.model.ParamsStopName;
 
@@ -21,8 +23,9 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.OutputStream;
-import java.net.HttpURLConnection;
 import java.net.URL;
+
+import javax.net.ssl.HttpsURLConnection;
 
 /**
  * Created by Jeri on 12/2/14.
@@ -68,7 +71,7 @@ public class RouteService extends IntentService {
 
 
     /**
-     * Creates an IntentService.  Invoked by your subclass's constructor.
+     * Creates an IntentService.
      *
      */
     public RouteService() {
@@ -103,7 +106,7 @@ public class RouteService extends IntentService {
 
 
 
-        HttpURLConnection con = null;
+        HttpsURLConnection con = null;
 
         StringBuilder builder = new StringBuilder();
 
@@ -132,20 +135,25 @@ public class RouteService extends IntentService {
             e.printStackTrace();
         }
 
+        HttpResponseCache cache = HttpResponseCache.getInstalled();
+        Log.d(TAG, "HttpResponseCache requests: "  + cache.getRequestCount() +
+                ", hits: " + cache.getHitCount() +
+                ", network: " + cache.getNetworkCount());
+
         sendResult(builder.toString(), messenger, requestType);
     }
 
-    private HttpURLConnection setSearchParams(String streetName){
+    private HttpsURLConnection setSearchParams(String streetName){
 
         Uri builtUri = Uri.parse(URI_BASE).buildUpon()
                 .appendPath(PATH_ROUTES_BY_STOP)
                 .appendPath(PATH_RUN)
                 .build();
 
-        HttpURLConnection con = null;
+        HttpsURLConnection con = null;
 
         try {
-            con = (HttpURLConnection) ( new URL(builtUri.toString())).openConnection();
+            con = (HttpsURLConnection) ( new URL(builtUri.toString())).openConnection();
             con.setRequestMethod("POST");
 
             con.setRequestProperty(HEADER_CONTENT_TYPE, HEADER_CONTENT_TYPE_VALUE);
@@ -170,22 +178,31 @@ public class RouteService extends IntentService {
         return con;
     }
 
+    @Override
+    public void onDestroy() {
+        super.onDestroy();
+        FlorianopolisApp application = (FlorianopolisApp) getApplication();
+        application.flushCache();
+    }
 
-    private HttpURLConnection setStopsParams(Integer routeId){
+    private HttpsURLConnection setStopsParams(Integer routeId){
 
         Uri builtUri = Uri.parse(URI_BASE).buildUpon()
                 .appendPath(PATH_STOPS_BY_ROUTE)
                 .appendPath(PATH_RUN)
                 .build();
 
-        HttpURLConnection con = null;
+        HttpsURLConnection con = null;
 
         try {
-            con = (HttpURLConnection) ( new URL(builtUri.toString())).openConnection();
+            con = (HttpsURLConnection) ( new URL(builtUri.toString())).openConnection();
             con.setRequestMethod("POST");
             con.setRequestProperty(HEADER_CONTENT_TYPE, HEADER_CONTENT_TYPE_VALUE);
             con.setRequestProperty(HEADER_AUTH, HEADER_AUTH_VALUE);
             con.setRequestProperty(HEADER_APPGLU, HEADER_APPGLU_VALUE);
+
+
+            con.addRequestProperty("Cache-Control", "max-age=0");
             ParamsRouteId params = new ParamsRouteId(routeId);
             Gson gson = new Gson();
 
@@ -205,17 +222,17 @@ public class RouteService extends IntentService {
     }
 
 
-    private HttpURLConnection setDeparturesParams(Integer routeId){
+    private HttpsURLConnection setDeparturesParams(Integer routeId){
 
         Uri builtUri = Uri.parse(URI_BASE).buildUpon()
                 .appendPath(PATH_DEPARTURES_BY_ROUTE)
                 .appendPath(PATH_RUN)
                 .build();
 
-        HttpURLConnection con = null;
+        HttpsURLConnection con = null;
 
         try {
-            con = (HttpURLConnection) ( new URL(builtUri.toString())).openConnection();
+            con = (HttpsURLConnection) ( new URL(builtUri.toString())).openConnection();
             con.setRequestMethod("POST");
             con.setRequestProperty(HEADER_CONTENT_TYPE, HEADER_CONTENT_TYPE_VALUE);
             con.setRequestProperty(HEADER_AUTH, HEADER_AUTH_VALUE);
@@ -248,7 +265,7 @@ public class RouteService extends IntentService {
     public static void sendResult(String result,
                                   Messenger messenger,
                                   String requestType) {
-        Log.d(TAG, "sendResult returning RESULT");
+        Log.d(TAG, "sendResult: " + requestType);
         Message msg = Message.obtain();
         Bundle data = new Bundle();
         if (ROUTE_SERVICE_SEARCH_REQUEST.equals(requestType)) {

@@ -38,6 +38,7 @@ public class RouteDetailFragment extends Fragment {
         LocalActivityManager mLocalActivityManager = new LocalActivityManager(getActivity(), false);
         mLocalActivityManager.dispatchCreate(savedInstanceState);
         tabs.setup(mLocalActivityManager);
+//        tabs.setup();
 
         TabHost.TabSpec spec=tabs.newTabSpec("tab1");
         spec.setIndicator(getString(R.string.stops));

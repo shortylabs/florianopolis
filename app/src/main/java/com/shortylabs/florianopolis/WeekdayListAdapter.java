@@ -7,29 +7,28 @@ import android.view.ViewGroup;
 import android.widget.ArrayAdapter;
 import android.widget.TextView;
 
-import com.shortylabs.florianopolis.model.Stop;
+import com.shortylabs.florianopolis.model.Departure;
 
 import java.util.List;
 
 /**
  * Created by Jeri on 12/6/14.
  */
-public class StopsListAdapter extends ArrayAdapter<Stop> {
+public class WeekdayListAdapter extends ArrayAdapter<Departure> {
 
-    private static final String TAG =  StopsListAdapter.class.getSimpleName();
-    private List<Stop> mList;
-    private final StopsFragment mStopsFragment;
+    private static final String TAG =  WeekdayListAdapter.class.getSimpleName();
+    private List<Departure> mList;
+    private final WeekdayFragment mWeekdayFragment;
     /**
      * Instantiate the MessengerHandler, passing in the
      * Activity to be stored as a WeakReference
      */
 //    private MessengerHandler handler;
 
-    public StopsListAdapter(StopsFragment fragment, List<Stop> list) {
+    public WeekdayListAdapter(WeekdayFragment fragment, List<Departure> list) {
         super(fragment.getActivity(), 0, list);
-        this.mStopsFragment = fragment;
+        this.mWeekdayFragment = fragment;
         this.mList = list;
-//        this.handler =  new MessengerHandler(fragment);
     }
 
 
@@ -40,14 +39,13 @@ public class StopsListAdapter extends ArrayAdapter<Stop> {
         final Context context = parent.getContext();
         ViewHolder viewHolder = null;
 
-        /** Set data to your Views. */
-        final Stop item = mList.get(position);
+        final Departure item = mList.get(position);
 
         if(rowView == null) {
 
             // Get a new instance of the row layout view
-            LayoutInflater inflater = mStopsFragment.getActivity().getLayoutInflater();
-            rowView = inflater.inflate(R.layout.stop_list_item, null);
+            LayoutInflater inflater = mWeekdayFragment.getActivity().getLayoutInflater();
+            rowView = inflater.inflate(R.layout.departure_list_item, null);
             viewHolder = new ViewHolder(rowView);
             rowView.setTag(viewHolder);
 
@@ -56,7 +54,7 @@ public class StopsListAdapter extends ArrayAdapter<Stop> {
         }
 
 
-        viewHolder.stopNameTextView.setText(item.name);
+        viewHolder.departureTimeTextView.setText(item.time);
 
 
         return rowView;
@@ -67,10 +65,10 @@ public class StopsListAdapter extends ArrayAdapter<Stop> {
      * Cache of the children views for a forecast list item.
      */
     public static class ViewHolder {
-        public final TextView stopNameTextView;
+        public final TextView departureTimeTextView;
 
         public ViewHolder(View view) {
-            stopNameTextView = (TextView) view.findViewById(R.id.stop_name_textview);
+            departureTimeTextView = (TextView) view.findViewById(R.id.departure_time_textview);
         }
     }
 

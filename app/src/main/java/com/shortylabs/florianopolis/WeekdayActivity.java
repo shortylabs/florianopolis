@@ -14,7 +14,7 @@ public class WeekdayActivity extends Activity {
         setContentView(R.layout.activity_weekday);
         if (savedInstanceState == null) {
             getFragmentManager().beginTransaction()
-                    .add(R.id.container, new WeekdayFragment())
+                    .add(R.id.route_detail_container, new WeekdayFragment())
                     .commit();
         }
     }

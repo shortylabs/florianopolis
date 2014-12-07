@@ -14,7 +14,7 @@ public class StopsActivity extends Activity {
         setContentView(R.layout.activity_stops);
         if (savedInstanceState == null) {
             getFragmentManager().beginTransaction()
-                    .add(R.id.container, new StopsFragment())
+                    .add(R.id.route_detail_container, new StopsFragment())
                     .commit();
         }
     }

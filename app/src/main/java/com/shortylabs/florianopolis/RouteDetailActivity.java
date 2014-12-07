@@ -14,7 +14,7 @@ public class RouteDetailActivity extends Activity {
         setContentView(R.layout.activity_route_detail);
         if (savedInstanceState == null) {
             getFragmentManager().beginTransaction()
-                    .add(R.id.container, new RouteDetailFragment())
+                    .add(R.id.route_detail_container, new RouteDetailFragment())
                     .commit();
         }
     }
