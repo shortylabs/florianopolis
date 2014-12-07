@@ -1,5 +1,6 @@
 package com.shortylabs.florianopolis;
 
+import android.app.Fragment;
 import android.content.Context;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -14,20 +15,20 @@ import java.util.List;
 /**
  * Created by Jeri on 12/6/14.
  */
-public class WeekdayListAdapter extends ArrayAdapter<Departure> {
+public class DeparturesListAdapter extends ArrayAdapter<Departure> {
 
-    private static final String TAG =  WeekdayListAdapter.class.getSimpleName();
+    private static final String TAG =  DeparturesListAdapter.class.getSimpleName();
     private List<Departure> mList;
-    private final WeekdayFragment mWeekdayFragment;
+    private final Fragment mFragment;
     /**
      * Instantiate the MessengerHandler, passing in the
      * Activity to be stored as a WeakReference
      */
 //    private MessengerHandler handler;
 
-    public WeekdayListAdapter(WeekdayFragment fragment, List<Departure> list) {
+    public DeparturesListAdapter(Fragment fragment, List<Departure> list) {
         super(fragment.getActivity(), 0, list);
-        this.mWeekdayFragment = fragment;
+        this.mFragment = fragment;
         this.mList = list;
     }
 
@@ -44,7 +45,7 @@ public class WeekdayListAdapter extends ArrayAdapter<Departure> {
         if(rowView == null) {
 
             // Get a new instance of the row layout view
-            LayoutInflater inflater = mWeekdayFragment.getActivity().getLayoutInflater();
+            LayoutInflater inflater = mFragment.getActivity().getLayoutInflater();
             rowView = inflater.inflate(R.layout.departure_list_item, null);
             viewHolder = new ViewHolder(rowView);
             rowView.setTag(viewHolder);

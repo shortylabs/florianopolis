@@ -26,7 +26,7 @@ public class WeekdayFragment extends Fragment {
 
     private static final String TAG = WeekdayFragment.class.getSimpleName();
 
-    private WeekdayListAdapter mAdapter;
+    private DeparturesListAdapter mAdapter;
 
     private ListView mWeekdayListView;
 
@@ -46,7 +46,7 @@ public class WeekdayFragment extends Fragment {
     }
 
 
-    public WeekdayListAdapter getStopsListAdapter() {
+    public DeparturesListAdapter getStopsListAdapter() {
         return mAdapter;
     }
 
@@ -88,7 +88,7 @@ public class WeekdayFragment extends Fragment {
         Gson gson = new Gson();
         departures = gson.fromJson(mJsonResult, Departures.class);
         if (departures != null && departures.rows.size() > 0 && departures.weekday().size() > 0) {
-            mAdapter = new WeekdayListAdapter(this,
+            mAdapter = new DeparturesListAdapter(this,
                     departures.weekday());
 
             mWeekdayListView.setAdapter(mAdapter);

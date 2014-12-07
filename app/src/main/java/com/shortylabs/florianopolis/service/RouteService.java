@@ -4,7 +4,6 @@ import android.app.IntentService;
 import android.content.Context;
 import android.content.Intent;
 import android.net.Uri;
-import android.net.http.HttpResponseCache;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Message;
@@ -135,10 +134,10 @@ public class RouteService extends IntentService {
             e.printStackTrace();
         }
 
-        HttpResponseCache cache = HttpResponseCache.getInstalled();
-        Log.d(TAG, "HttpResponseCache requests: "  + cache.getRequestCount() +
-                ", hits: " + cache.getHitCount() +
-                ", network: " + cache.getNetworkCount());
+//        HttpResponseCache cache = HttpResponseCache.getInstalled();
+//        Log.d(TAG, "HttpResponseCache requests: "  + cache.getRequestCount() +
+//                ", hits: " + cache.getHitCount() +
+//                ", network: " + cache.getNetworkCount());
 
         sendResult(builder.toString(), messenger, requestType);
     }
@@ -182,7 +181,7 @@ public class RouteService extends IntentService {
     public void onDestroy() {
         super.onDestroy();
         FlorianopolisApp application = (FlorianopolisApp) getApplication();
-        application.flushCache();
+//        application.flushCache();
     }
 
     private HttpsURLConnection setStopsParams(Integer routeId){
@@ -201,8 +200,10 @@ public class RouteService extends IntentService {
             con.setRequestProperty(HEADER_AUTH, HEADER_AUTH_VALUE);
             con.setRequestProperty(HEADER_APPGLU, HEADER_APPGLU_VALUE);
 
+//            int maxStale = 60 * 60 * 4 ; // tolerate 4-hours stale
+//            con.addRequestProperty("Cache-Control", "max-stale=" + maxStale);
+//            con.addRequestProperty("Cache-Control", "max-age=0");
 
-            con.addRequestProperty("Cache-Control", "max-age=0");
             ParamsRouteId params = new ParamsRouteId(routeId);
             Gson gson = new Gson();
 
@@ -237,6 +238,11 @@ public class RouteService extends IntentService {
             con.setRequestProperty(HEADER_CONTENT_TYPE, HEADER_CONTENT_TYPE_VALUE);
             con.setRequestProperty(HEADER_AUTH, HEADER_AUTH_VALUE);
             con.setRequestProperty(HEADER_APPGLU, HEADER_APPGLU_VALUE);
+
+//            int maxStale = 60 * 60 * 4 ; // tolerate 4-hours stale
+//            con.addRequestProperty("Cache-Control", "max-stale=" + maxStale);
+//            con.addRequestProperty("Cache-Control", "max-age=0");
+
             ParamsRouteId params = new ParamsRouteId(routeId);
             Gson gson = new Gson();
 

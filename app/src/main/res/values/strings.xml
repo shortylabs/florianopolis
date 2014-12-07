@@ -20,5 +20,7 @@
         No routes found for  <xliff:g id="streetName">%1$s</xliff:g>
     </string>
     <string name="format_no_weekday_departures">No weekday departures</string>
+    <string name="format_no_saturday_departures">No Saturday departures</string>
+    <string name="format_no_sunday_departures">No Sunday departures</string>
 
 </resources>
