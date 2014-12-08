@@ -19,13 +19,15 @@ public class RouteDetailActivity extends ActivityGroup {
     private Integer mRouteId;
 
     private TabHost mTabs;
-    private Integer mCurrTabIndex;
+    private int mCurrTabIndex = -1;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
 
-
+        if (savedInstanceState != null){
+            mCurrTabIndex = savedInstanceState.getInt(CURR_TAB_INDEX);
+        }
         setTitle(getIntent().getStringExtra(EXTRA_ROUTE_NAME));
         mRouteId = getIntent().getIntExtra(EXTRA_ROUTE_ID, -1);
 
@@ -65,9 +67,18 @@ public class RouteDetailActivity extends ActivityGroup {
         spec.setContent(sundayIntent);
         mTabs.addTab(spec);
 
+        if (mCurrTabIndex > -1) {
+            mTabs.setCurrentTab(mCurrTabIndex);
+        }
+
+
     }
 
-
+    @Override
+    protected void onSaveInstanceState(Bundle outState) {
+        super.onSaveInstanceState(outState);
+        outState.putInt(CURR_TAB_INDEX, mTabs.getCurrentTab());
+    }
 
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
