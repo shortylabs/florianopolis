@@ -1,23 +1,72 @@
 package com.shortylabs.florianopolis;
 
-import android.app.Activity;
+import android.app.ActivityGroup;
+import android.content.Intent;
 import android.os.Bundle;
 import android.view.Menu;
 import android.view.MenuItem;
+import android.widget.TabHost;
+
+import com.shortylabs.florianopolis.service.RouteService;
 
 
-public class RouteDetailActivity extends Activity {
+public class RouteDetailActivity extends ActivityGroup {
+
+    public static final String  EXTRA_ROUTE_ID = "extraRouteId";
+    public static final String  EXTRA_ROUTE_NAME = "extraRouteName";
+    public static final String  CURR_TAB_INDEX = "currTabIndex";
+
+    private Integer mRouteId;
+
+    private TabHost mTabs;
+    private Integer mCurrTabIndex;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+
+
+        setTitle(getIntent().getStringExtra(EXTRA_ROUTE_NAME));
+        mRouteId = getIntent().getIntExtra(EXTRA_ROUTE_ID, -1);
+
         setContentView(R.layout.activity_route_detail);
-        if (savedInstanceState == null) {
-            getFragmentManager().beginTransaction()
-                    .add(R.id.route_detail_container, new RouteDetailFragment())
-                    .commit();
-        }
+
+        mTabs = (TabHost) findViewById(R.id.tabhost);
+
+        // http://stackoverflow.com/questions/3272500/android-exception-did-you-forget-to-call-public-void-setup-localactivitymanag
+//        mTabs.setup();
+        mTabs.setup(this.getLocalActivityManager());
+
+        TabHost.TabSpec spec = mTabs.newTabSpec("tab1");
+        spec.setIndicator(getString(R.string.stops));
+        Intent stopsIntent = new Intent(this, StopsActivity.class);
+        stopsIntent.putExtra(RouteService.ROUTE_SERVICE_ROUTE_ID_KEY, mRouteId);
+        spec.setContent(stopsIntent);
+        mTabs.addTab(spec);
+
+        spec = mTabs.newTabSpec("tab2");
+        spec.setIndicator(getString(R.string.weekday));
+        Intent weekdayIntent = new Intent(this, WeekdayActivity.class);
+        weekdayIntent.putExtra(RouteService.ROUTE_SERVICE_ROUTE_ID_KEY, mRouteId);
+        spec.setContent(weekdayIntent);
+        mTabs.addTab(spec);
+
+        spec = mTabs.newTabSpec("tab3");
+        spec.setIndicator(getString(R.string.saturday));
+        Intent saturdayIntent = new Intent(this, SaturdayActivity.class);
+        saturdayIntent.putExtra(RouteService.ROUTE_SERVICE_ROUTE_ID_KEY, mRouteId);
+        spec.setContent(saturdayIntent);
+        mTabs.addTab(spec);
+
+        spec = mTabs.newTabSpec("tab4");
+        spec.setIndicator(getString(R.string.sunday));
+        Intent sundayIntent = new Intent(this, SundayActivity.class);
+        sundayIntent.putExtra(RouteService.ROUTE_SERVICE_ROUTE_ID_KEY, mRouteId);
+        spec.setContent(sundayIntent);
+        mTabs.addTab(spec);
+
     }
+
 
 
     @Override

@@ -68,8 +68,8 @@ public class RouteListAdapter extends ArrayAdapter<Route> {
             public void onClick(View v) {
 //                Toast.makeText(getContext(), "detail goes here", Toast.LENGTH_SHORT).show();
                 Intent intent = new Intent(getContext(), RouteDetailActivity.class);
-                intent.putExtra(RouteDetailFragment.EXTRA_ROUTE_ID, item.id);
-                intent.putExtra(RouteDetailFragment.EXTRA_ROUTE_NAME, item.longName);
+                intent.putExtra(RouteDetailActivity.EXTRA_ROUTE_ID, item.id);
+                intent.putExtra(RouteDetailActivity.EXTRA_ROUTE_NAME, item.longName);
                 mRouteListFragment.startActivity(intent);
 
             }

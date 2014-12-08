@@ -70,7 +70,6 @@ public class SundayFragment extends Fragment {
 
     }
 
-
     /**
      * Instantiate the MessengerHandler, passing in the
      * Activity to be stored as a WeakReference
