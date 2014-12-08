@@ -14,5 +14,7 @@ A possible usability issue is that the Weekday, Saturday, and Sunday tabs need t
 
 An enhancement would be to provide a Setting to show times in 12 hour or 24 hour format, e.g., 15:09 would be shown as 3:00 PM in 12-hour mode.
 
+Normally, I would use third party libraries, like Retrofit, but I wanted to show that I can use Java and Android libraries, too.
+
 
 
