@@ -70,8 +70,6 @@ public class RouteDetailActivity extends ActivityGroup {
         if (mCurrTabIndex > -1) {
             mTabs.setCurrentTab(mCurrTabIndex);
         }
-
-
     }
 
     @Override

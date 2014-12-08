@@ -28,7 +28,7 @@ import com.shortylabs.florianopolis.service.RouteService;
 import java.lang.ref.WeakReference;
 
 /**
- * A placeholder fragment containing a simple view.
+ * The main list view of the app showing the routes found for a user entered street name
  */
 public class RouteListFragment extends Fragment {
 
@@ -229,18 +229,6 @@ public class RouteListFragment extends Fragment {
                     routeListFragment.showResults();
 
                 }
-
-//                // is this necessary when using a foreground service?
-//                routeListFragment.getActivity().runOnUiThread(new Runnable() {
-//                    public void run() {
-////                        notifyDataSetChanged();
-//                        RouteListAdapter adapter = routeListFragment.getRouteListAdapter();
-//                        if (adapter != null) {
-//                            adapter.notifyDataSetChanged();
-//                        }
-//                    }
-//                });
-
 
             }
         }

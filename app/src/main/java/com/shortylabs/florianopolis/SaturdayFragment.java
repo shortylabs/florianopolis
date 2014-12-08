@@ -10,6 +10,7 @@ import android.view.Gravity;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.GridView;
 import android.widget.LinearLayout;
 import android.widget.ListView;
 import android.widget.ProgressBar;
@@ -22,7 +23,8 @@ import com.shortylabs.florianopolis.service.RouteService;
 import java.lang.ref.WeakReference;
 
 /**
- * A placeholder fragment containing a simple view.
+ *
+ * A tab in the detail view for showing the Sunday time schedule for a route
  */
 public class SaturdayFragment extends Fragment {
 
@@ -31,7 +33,7 @@ public class SaturdayFragment extends Fragment {
 
     private DeparturesListAdapter mAdapter;
 
-    private ListView mListView;
+    private GridView mGridView;
 
     private String mJsonResult;
 
@@ -55,8 +57,8 @@ public class SaturdayFragment extends Fragment {
             mRouteId = intent.getIntExtra(RouteService.ROUTE_SERVICE_ROUTE_ID_KEY, -1);
         }
 
-        mListView = (ListView) rootView.findViewById(R.id.tab3_saturday);
-        mListView.setChoiceMode(ListView.CHOICE_MODE_NONE);
+        mGridView = (GridView) rootView.findViewById(R.id.tab3_saturday);
+        mGridView.setChoiceMode(ListView.CHOICE_MODE_NONE);
 
         mProgressBar = (ProgressBar) rootView.findViewById(R.id.saturday_progress);
         LinearLayout.LayoutParams layoutParams =
@@ -107,7 +109,7 @@ public class SaturdayFragment extends Fragment {
             mAdapter = new DeparturesListAdapter(this,
                     departures.saturday());
 
-            mListView.setAdapter(mAdapter);
+            mGridView.setAdapter(mAdapter);
             mAdapter.notifyDataSetChanged();
         } else {
 
@@ -146,8 +148,6 @@ public class SaturdayFragment extends Fragment {
 
             final SaturdayFragment saturdayFragment = outerClass.get();
 
-            // If SaturdayFragment hasn't been garbage collected
-            // (closed by user), proceed.
             if (saturdayFragment != null && saturdayFragment.getActivity() != null) {
 
                 // Extract the data from Message, which is in the form
@@ -159,8 +159,6 @@ public class SaturdayFragment extends Fragment {
                     saturdayFragment.showResults();
 
                 }
-
-
             }
         }
     }

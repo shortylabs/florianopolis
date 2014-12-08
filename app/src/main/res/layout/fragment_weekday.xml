@@ -13,8 +13,12 @@
         />
 
 
-    <ListView android:id="@+id/tab2_weekday"
+    <GridView android:id="@+id/tab2_weekday"
         android:layout_width="match_parent"
-        android:layout_height="wrap_content" />
+        android:layout_height="wrap_content"
+        android:numColumns="auto_fit"
+        android:stretchMode="columnWidth"
+        android:columnWidth="100dp"
+        />
 
 </LinearLayout>

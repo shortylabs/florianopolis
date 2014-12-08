@@ -10,6 +10,7 @@ import android.view.Gravity;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.GridView;
 import android.widget.LinearLayout;
 import android.widget.ListView;
 import android.widget.ProgressBar;
@@ -21,8 +22,10 @@ import com.shortylabs.florianopolis.service.RouteService;
 
 import java.lang.ref.WeakReference;
 
+
 /**
- * A placeholder fragment containing a simple view.
+ *
+ * A tab in the detail view for showing the Sunday time schedule for a route
  */
 public class SundayFragment extends Fragment {
 
@@ -30,7 +33,7 @@ public class SundayFragment extends Fragment {
 
     private DeparturesListAdapter mAdapter;
 
-    private ListView mListView;
+    private GridView mGridView;
 
     private String mJsonResult;
 
@@ -54,8 +57,8 @@ public class SundayFragment extends Fragment {
             mRouteId = intent.getIntExtra(RouteService.ROUTE_SERVICE_ROUTE_ID_KEY, -1);
         }
 
-        mListView = (ListView) rootView.findViewById(R.id.tab4_sunday);
-        mListView.setChoiceMode(ListView.CHOICE_MODE_NONE);
+        mGridView = (GridView) rootView.findViewById(R.id.tab4_sunday);
+        mGridView.setChoiceMode(ListView.CHOICE_MODE_NONE);
 
         mProgressBar = (ProgressBar) rootView.findViewById(R.id.sunday_progress);
         LinearLayout.LayoutParams layoutParams =
@@ -105,7 +108,7 @@ public class SundayFragment extends Fragment {
             mAdapter = new DeparturesListAdapter(this,
                     departures.sunday());
 
-            mListView.setAdapter(mAdapter);
+            mGridView.setAdapter(mAdapter);
             mAdapter.notifyDataSetChanged();
         } else {
 
@@ -157,8 +160,6 @@ public class SundayFragment extends Fragment {
                     sundayFragment.showResults();
 
                 }
-
-
             }
         }
     }

@@ -8,6 +8,9 @@ import android.view.MenuItem;
 
 public class WeekdayActivity extends Activity {
 
+    public static final String DEPARTURES_MESSENGER_KEY = "departuresMessenger";
+    public static final String ROUTE_ID_KEY = "routeId";
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);

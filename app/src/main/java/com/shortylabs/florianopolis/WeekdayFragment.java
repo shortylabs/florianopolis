@@ -10,6 +10,7 @@ import android.view.Gravity;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.GridView;
 import android.widget.LinearLayout;
 import android.widget.ListView;
 import android.widget.ProgressBar;
@@ -22,7 +23,7 @@ import com.shortylabs.florianopolis.service.RouteService;
 import java.lang.ref.WeakReference;
 
 /**
- * A placeholder fragment containing a simple view.
+ * A tab in the detail view for showing the weekday time schedule for a route
  */
 public class WeekdayFragment extends Fragment {
 
@@ -31,7 +32,7 @@ public class WeekdayFragment extends Fragment {
 
     private DeparturesListAdapter mAdapter;
 
-    private ListView mWeekdayListView;
+    private GridView mGridView;
 
     private String mJsonResult;
 
@@ -70,8 +71,8 @@ public class WeekdayFragment extends Fragment {
             mRouteId = intent.getIntExtra(RouteService.ROUTE_SERVICE_ROUTE_ID_KEY, -1);
         }
 
-        mWeekdayListView = (ListView) rootView.findViewById(R.id.tab2_weekday);
-        mWeekdayListView.setChoiceMode(ListView.CHOICE_MODE_NONE);
+        mGridView = (GridView) rootView.findViewById(R.id.tab2_weekday);
+        mGridView.setChoiceMode(ListView.CHOICE_MODE_NONE);
 
         mProgressBar = (ProgressBar) rootView.findViewById(R.id.weekday_progress);
         LinearLayout.LayoutParams layoutParams =
@@ -107,7 +108,7 @@ public class WeekdayFragment extends Fragment {
             mAdapter = new DeparturesListAdapter(this,
                     departures.weekday());
 
-            mWeekdayListView.setAdapter(mAdapter);
+            mGridView.setAdapter(mAdapter);
             mAdapter.notifyDataSetChanged();
         } else {
 

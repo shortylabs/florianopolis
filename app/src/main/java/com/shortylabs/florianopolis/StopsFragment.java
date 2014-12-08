@@ -23,7 +23,8 @@ import java.lang.ref.WeakReference;
 import java.util.List;
 
 /**
- * A placeholder fragment containing a simple view.
+ *
+ * A tab in the detail view for showing the stops for a route
  */
 public class StopsFragment extends Fragment {
 
@@ -94,7 +95,6 @@ public class StopsFragment extends Fragment {
     }
 
 
-
     private void showResults() {
 
         Log.d(TAG, mJsonResult);
@@ -112,9 +112,6 @@ public class StopsFragment extends Fragment {
 
         mStopsListView.setAdapter(mAdapter);
         mAdapter.notifyDataSetChanged();
-
-
-
 
     }
 

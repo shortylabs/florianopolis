@@ -4,6 +4,7 @@ import android.app.IntentService;
 import android.content.Context;
 import android.content.Intent;
 import android.net.Uri;
+import android.net.http.HttpResponseCache;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Message;
@@ -22,6 +23,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.OutputStream;
+import java.io.UnsupportedEncodingException;
 import java.net.URL;
 
 import javax.net.ssl.HttpsURLConnection;
@@ -67,26 +69,30 @@ public class RouteService extends IntentService {
     //https://api.appglu.com/v1/queries/findStopsByRouteId/run
 
 
-
-
     /**
      * Creates an IntentService.
-     *
      */
     public RouteService() {
         super(ROUTE_SERVICE);
     }
 
+    /**
+     * Handle three types of requests: routes by stop name, stops by routeId, departures by routeId
+     * Cache the departures result by routeId so that the time schedule tabs (weekday, Saturday, Sunday) can
+     * reuse it.
+     *
+     * @param intent
+     */
     @Override
     protected void onHandleIntent(Intent intent) {
         Messenger messenger;
         String streetName = null;
         String requestType = null;
         Integer routeId = null;
+        String jsonResponse = null;
         if (intent.hasExtra(ROUTE_SERVICE_MESSENGER_KEY)) {
             messenger = (Messenger) intent.getExtras().get(ROUTE_SERVICE_MESSENGER_KEY);
-        }
-        else {
+        } else {
             Log.e(TAG, "Expected Messenger extra not found in intent");
             return;
         }
@@ -103,165 +109,188 @@ public class RouteService extends IntentService {
             routeId = intent.getIntExtra(ROUTE_SERVICE_ROUTE_ID_KEY, -1);
         }
 
+        FlorianopolisApp app = (FlorianopolisApp) getApplication();
 
-
-        HttpsURLConnection con = null;
-
-        StringBuilder builder = new StringBuilder();
-
-        try {
-            if (ROUTE_SERVICE_SEARCH_REQUEST.equals(requestType) && streetName != null) {
-                con = setSearchParams(streetName);
-            }
-            else if (ROUTE_SERVICE_STOPS_REQUEST.equals(requestType)) {
-                con = setStopsParams(routeId);
-            }
-            else if (ROUTE_SERVICE_DEPARTURES_REQUEST.equals(requestType)){
-               con = setDeparturesParams(routeId);
-            }
-            else {
-                Log.e(TAG, "Not an expected request type");
-                return;
-            }
-            con.connect();
-            InputStream is = con.getInputStream();
-            BufferedReader reader = new BufferedReader(new InputStreamReader(is));
-            String line;
-            while ((line = reader.readLine()) != null) {
-                builder.append(line);
-            }
-        } catch (IOException e) {
-            e.printStackTrace();
+        if (ROUTE_SERVICE_DEPARTURES_REQUEST.equals(requestType)) {
+            jsonResponse = getCachedDepartures(routeId);
         }
 
-        sendResult(builder.toString(), messenger, requestType);
+        if (jsonResponse == null) {
+
+            HttpsURLConnection con = null;
+
+            StringBuilder builder = new StringBuilder();
+            Uri uri = null;
+
+            try {
+                if (ROUTE_SERVICE_SEARCH_REQUEST.equals(requestType) && streetName != null) {
+                    uri = constructSearchUri(streetName);
+                    con = constructConnection(uri);
+                    writeStreetNameParam(streetName, con);
+                } else if (ROUTE_SERVICE_STOPS_REQUEST.equals(requestType)) {
+                    uri = constructStopsUri(routeId);
+                    con = constructConnection(uri);
+                    writeRouteIdParam(routeId, con);
+                } else if (ROUTE_SERVICE_DEPARTURES_REQUEST.equals(requestType)) {
+                    uri = constructDeparturesUri(routeId);
+                    con = constructConnection(uri);
+                    writeRouteIdParam(routeId, con);
+                } else {
+                    Log.e(TAG, "Not an expected request type");
+                    return;
+                }
+
+                con.connect();
+                InputStream is = con.getInputStream();
+                BufferedReader reader = new BufferedReader(new InputStreamReader(is));
+                String line;
+                while ((line = reader.readLine()) != null) {
+                    builder.append(line);
+                }
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+
+            HttpResponseCache cache = HttpResponseCache.getInstalled();
+            if (cache != null) {
+                Log.d(TAG, "HttpResponseCache requests: " + cache.getRequestCount() +
+                        ", network: " + cache.getNetworkCount() +
+                        ", hits: " + cache.getHitCount());
+            }
+            jsonResponse = builder.toString();
+
+
+            // cache results for departures
+            if (ROUTE_SERVICE_DEPARTURES_REQUEST.equals(requestType)) {
+                app.putDepartures(routeId, jsonResponse);
+                Log.d(TAG, "returning network results for routeId: " + routeId);
+            }
+        }
+        else {
+            Log.d(TAG, "returning cached results for routeId: " + routeId);
+        }
+
+        sendResult(jsonResponse, messenger, requestType);
     }
 
-    private HttpsURLConnection setSearchParams(String streetName){
+    private String getCachedDepartures(Integer routeId) {
+        String json = null;
+        if (routeId != null) {
+            FlorianopolisApp app = (FlorianopolisApp) getApplication();
+            json = app.getDepartures(routeId);
+        }
+        return json;
+    }
 
-        Uri builtUri = Uri.parse(URI_BASE).buildUpon()
-                .appendPath(PATH_ROUTES_BY_STOP)
-                .appendPath(PATH_RUN)
-                .build();
-
+    private HttpsURLConnection constructConnection(Uri uri) {
         HttpsURLConnection con = null;
-
         try {
-            con = (HttpsURLConnection) ( new URL(builtUri.toString())).openConnection();
+            con = (HttpsURLConnection) (new URL(uri.toString())).openConnection();
+
+            // experiment with HttpResponseCache params
+//            con.setUseCaches(false);
+//            con.setDefaultUseCaches(false);
+//            con.setRequestProperty("Cache-Control", "only-if-cached");  // force cache response
+//            con.setRequestProperty("Cache-Control", "no-cache");        // force network response
+//            con.setRequestProperty("Cache-Control", "max-age=0");       // validate cached response
+
             con.setRequestMethod("POST");
 
             con.setRequestProperty(HEADER_CONTENT_TYPE, HEADER_CONTENT_TYPE_VALUE);
             con.setRequestProperty(HEADER_AUTH, HEADER_AUTH_VALUE);
             con.setRequestProperty(HEADER_APPGLU, HEADER_APPGLU_VALUE);
+        } catch (IOException e) {
+            Log.e(TAG, e.getMessage());
+        }
 
-            ParamsStopName params = new ParamsStopName(streetName);
-            Gson gson = new Gson();
+        return con;
+    }
 
-            // convert java object to JSON format,
-            // and returned as JSON formatted string
-            String json = gson.toJson(params);
-            byte[] outputInBytes = json.getBytes("UTF-8");
-            OutputStream os = con.getOutputStream();
+    /**
+     * set the request body with json routeId param
+     * @param routeId
+     * @param con
+     */
+    private void writeRouteIdParam(Integer routeId, HttpsURLConnection con) {
+
+        ParamsRouteId params = new ParamsRouteId(routeId);
+        Gson gson = new Gson();
+
+        // convert java object to JSON format,
+        // and returned as JSON formatted string
+        String json = gson.toJson(params);
+        byte[] outputInBytes = new byte[0];
+        try {
+            outputInBytes = json.getBytes("UTF-8");
+            OutputStream os = null;
+                os = con.getOutputStream();
             os.write( outputInBytes );
             os.close();
-
-
-        } catch (IOException e) {
-            e.printStackTrace();
+        } catch (UnsupportedEncodingException e ) {
+            Log.e(TAG, e.getMessage());
+        }catch (IOException e) {
+            Log.e(TAG, e.getMessage());
         }
-        return con;
+    }
+
+    /**
+     * set the request body with the json stopName param
+     * @param streetName
+     * @param con
+     */
+    private void writeStreetNameParam(String streetName, HttpsURLConnection con) {
+
+        ParamsStopName params = new ParamsStopName(streetName);
+        Gson gson = new Gson();
+
+        // convert java object to JSON format,
+        // and returned as JSON formatted string
+        String json = gson.toJson(params);
+        byte[] outputInBytes = new byte[0];
+        try {
+            outputInBytes = json.getBytes("UTF-8");
+            OutputStream os = null;
+            os = con.getOutputStream();
+            os.write( outputInBytes );
+            os.close();
+        } catch (UnsupportedEncodingException e ) {
+            Log.e(TAG, e.getMessage());
+        }catch (IOException e) {
+            Log.e(TAG, e.getMessage());
+        }
+    }
+
+    private Uri constructSearchUri(String streetName) {
+        return Uri.parse(URI_BASE).buildUpon()
+            .appendPath(PATH_ROUTES_BY_STOP)
+            .appendPath(PATH_RUN)
+            .build();
+    }
+
+    private Uri constructStopsUri(Integer routeId) {
+        return Uri.parse(URI_BASE).buildUpon()
+                .appendPath(PATH_STOPS_BY_ROUTE)
+                .appendPath(PATH_RUN)
+                .build();
+    }
+
+    private Uri constructDeparturesUri(Integer routeId) {
+        return Uri.parse(URI_BASE).buildUpon()
+                .appendPath(PATH_DEPARTURES_BY_ROUTE)
+                .appendPath(PATH_RUN)
+                .build();
     }
 
     @Override
     public void onDestroy() {
         super.onDestroy();
+        Log.d(TAG, "onDestroy");
         FlorianopolisApp application = (FlorianopolisApp) getApplication();
-//        application.flushCache();
-    }
-
-    private HttpsURLConnection setStopsParams(Integer routeId){
-
-        Uri builtUri = Uri.parse(URI_BASE).buildUpon()
-                .appendPath(PATH_STOPS_BY_ROUTE)
-                .appendPath(PATH_RUN)
-                .build();
-
-        HttpsURLConnection con = null;
-
-        try {
-            con = (HttpsURLConnection) ( new URL(builtUri.toString())).openConnection();
-            con.setRequestMethod("POST");
-            con.setRequestProperty(HEADER_CONTENT_TYPE, HEADER_CONTENT_TYPE_VALUE);
-            con.setRequestProperty(HEADER_AUTH, HEADER_AUTH_VALUE);
-            con.setRequestProperty(HEADER_APPGLU, HEADER_APPGLU_VALUE);
-
-//            int maxStale = 60 * 60 * 4 ; // tolerate 4-hours stale
-//            con.addRequestProperty("Cache-Control", "max-stale=" + maxStale);
-//            con.addRequestProperty("Cache-Control", "max-age=0");
-
-            ParamsRouteId params = new ParamsRouteId(routeId);
-            Gson gson = new Gson();
-
-            // convert java object to JSON format,
-            // and returned as JSON formatted string
-            String json = gson.toJson(params);
-            byte[] outputInBytes = json.getBytes("UTF-8");
-            OutputStream os = con.getOutputStream();
-            os.write( outputInBytes );
-            os.close();
-
-
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
-        return con;
-    }
-
-
-    private HttpsURLConnection setDeparturesParams(Integer routeId){
-
-        Uri builtUri = Uri.parse(URI_BASE).buildUpon()
-                .appendPath(PATH_DEPARTURES_BY_ROUTE)
-                .appendPath(PATH_RUN)
-                .build();
-
-        HttpsURLConnection con = null;
-
-        try {
-            con = (HttpsURLConnection) ( new URL(builtUri.toString())).openConnection();
-            con.setRequestMethod("POST");
-            con.setRequestProperty(HEADER_CONTENT_TYPE, HEADER_CONTENT_TYPE_VALUE);
-            con.setRequestProperty(HEADER_AUTH, HEADER_AUTH_VALUE);
-            con.setRequestProperty(HEADER_APPGLU, HEADER_APPGLU_VALUE);
-
-//            int maxStale = 60 * 60 * 4 ; // tolerate 4-hours stale
-//            con.addRequestProperty("Cache-Control", "max-stale=" + maxStale);
-//            con.addRequestProperty("Cache-Control", "max-age=0");
-
-            ParamsRouteId params = new ParamsRouteId(routeId);
-            Gson gson = new Gson();
-
-            // convert java object to JSON format,
-            // and returned as JSON formatted string
-            String json = gson.toJson(params);
-            byte[] outputInBytes = json.getBytes("UTF-8");
-            OutputStream os = con.getOutputStream();
-            os.write( outputInBytes );
-            os.close();
-
-
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
-        return con;
+        application.flushCache();
     }
 
     /**
-     *	Use the provided Messenger to send a Message to a Handler in
-     *	another process.
-     *
-     * 	The provided string, result, should be put into a Bundle
-     * 	and included with the sent Message.
+     *	Uses the passed messenger to pass the results back to the calling fragment
      */
     public static void sendResult(String result,
                                   Messenger messenger,
@@ -284,7 +313,6 @@ public class RouteService extends IntentService {
         msg.setData(data);
 
         try {
-            // Send the Message back to the client Activity.
             messenger.send(msg);
         } catch (RemoteException e) {
             e.printStackTrace();
@@ -354,4 +382,6 @@ public class RouteService extends IntentService {
         return intent;
 
     }
+
+
 }
