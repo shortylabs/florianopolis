@@ -9,13 +9,16 @@ import android.os.Message;
 import android.text.Editable;
 import android.text.TextWatcher;
 import android.util.Log;
+import android.view.Gravity;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.view.inputmethod.InputMethodManager;
 import android.widget.Button;
 import android.widget.EditText;
+import android.widget.LinearLayout;
 import android.widget.ListView;
+import android.widget.ProgressBar;
 import android.widget.Toast;
 
 import com.google.gson.Gson;
@@ -36,6 +39,7 @@ public class RouteListFragment extends Fragment {
     private static final String STREET_NAME = "streetName";
     private String mJsonResult;
     private String mStreetName;
+    private ProgressBar mProgressBar;
 
 
     private static final String TAG = RouteListFragment.class.getSimpleName();
@@ -88,6 +92,8 @@ public class RouteListFragment extends Fragment {
 
         mSearchButton = (Button) rootView.findViewById(R.id.search_button);
 
+        mProgressBar=(ProgressBar)rootView.findViewById(R.id.search_progress);
+        mProgressBar.setVisibility(View.GONE);
 
         mSearchButton.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -95,6 +101,17 @@ public class RouteListFragment extends Fragment {
                 InputMethodManager
                         mgr=(InputMethodManager)getActivity().getSystemService(Context.INPUT_METHOD_SERVICE);
                 mgr.hideSoftInputFromWindow(mStreetNameEdit.getWindowToken(), 0);
+
+                LinearLayout.LayoutParams layoutParams =
+                        (LinearLayout.LayoutParams)mProgressBar.getLayoutParams();
+                layoutParams.gravity = Gravity.CENTER_HORIZONTAL;
+                layoutParams.weight = 1.0f;
+                mProgressBar.setLayoutParams(layoutParams);
+                mProgressBar.setVisibility(View.VISIBLE);
+
+                if (mAdapter != null ) {
+                    mAdapter.clear();
+                }
                 runService();
             }
         });
@@ -145,6 +162,8 @@ public class RouteListFragment extends Fragment {
     private void showResults() {
 
         Log.d(TAG, mJsonResult);
+
+        mProgressBar.setVisibility(View.GONE);
         Routes routes;
         Gson gson = new Gson();
         routes = gson.fromJson(mJsonResult, Routes.class);

@@ -6,10 +6,13 @@ import android.os.Bundle;
 import android.os.Handler;
 import android.os.Message;
 import android.util.Log;
+import android.view.Gravity;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.LinearLayout;
 import android.widget.ListView;
+import android.widget.ProgressBar;
 import android.widget.Toast;
 
 import com.google.gson.Gson;
@@ -35,6 +38,8 @@ public class WeekdayFragment extends Fragment {
     private Integer mRouteId;
 
     public static final String EXTRA_DEPARTURE_TIME = "extraDepartureTime";
+
+    private ProgressBar mProgressBar;
 
     /**
      * Instantiate the MessengerHandler, passing in the
@@ -67,6 +72,15 @@ public class WeekdayFragment extends Fragment {
 
         mWeekdayListView = (ListView) rootView.findViewById(R.id.tab2_weekday);
         mWeekdayListView.setChoiceMode(ListView.CHOICE_MODE_NONE);
+
+        mProgressBar = (ProgressBar) rootView.findViewById(R.id.weekday_progress);
+        LinearLayout.LayoutParams layoutParams =
+                (LinearLayout.LayoutParams)mProgressBar.getLayoutParams();
+        layoutParams.gravity = Gravity.CENTER_HORIZONTAL;
+        layoutParams.weight = 1.0f;
+        mProgressBar.setLayoutParams(layoutParams);
+        mProgressBar.setVisibility(View.VISIBLE);
+
         runService();
         return rootView;
 
@@ -84,6 +98,8 @@ public class WeekdayFragment extends Fragment {
     private void showResults() {
 
         Log.d(TAG, mJsonResult);
+
+        mProgressBar.setVisibility(View.GONE);
         Departures departures;
         Gson gson = new Gson();
         departures = gson.fromJson(mJsonResult, Departures.class);

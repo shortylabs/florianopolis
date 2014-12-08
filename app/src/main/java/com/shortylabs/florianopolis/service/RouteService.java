@@ -134,11 +134,6 @@ public class RouteService extends IntentService {
             e.printStackTrace();
         }
 
-//        HttpResponseCache cache = HttpResponseCache.getInstalled();
-//        Log.d(TAG, "HttpResponseCache requests: "  + cache.getRequestCount() +
-//                ", hits: " + cache.getHitCount() +
-//                ", network: " + cache.getNetworkCount());
-
         sendResult(builder.toString(), messenger, requestType);
     }
 

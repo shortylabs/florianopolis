@@ -6,10 +6,13 @@ import android.os.Bundle;
 import android.os.Handler;
 import android.os.Message;
 import android.util.Log;
+import android.view.Gravity;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.LinearLayout;
 import android.widget.ListView;
+import android.widget.ProgressBar;
 
 import com.google.gson.Gson;
 import com.shortylabs.florianopolis.model.Stop;
@@ -35,6 +38,8 @@ public class StopsFragment extends Fragment {
     private Integer mRouteId;
 
     public static final String EXTRA_STOP_NAME = "extraStopName";
+
+    private ProgressBar mProgressBar;
 
     /**
      * Instantiate the MessengerHandler, passing in the
@@ -66,6 +71,15 @@ public class StopsFragment extends Fragment {
 
         mStopsListView =  (ListView)rootView.findViewById(R.id.tab1_stops);
         mStopsListView.setChoiceMode(ListView.CHOICE_MODE_NONE);
+
+        mProgressBar = (ProgressBar) rootView.findViewById(R.id.stops_progress);
+        LinearLayout.LayoutParams layoutParams =
+                (LinearLayout.LayoutParams)mProgressBar.getLayoutParams();
+        layoutParams.gravity = Gravity.CENTER_HORIZONTAL;
+        layoutParams.weight = 1.0f;
+        mProgressBar.setLayoutParams(layoutParams);
+        mProgressBar.setVisibility(View.VISIBLE);
+
         runService();
         return rootView;
 
@@ -84,6 +98,7 @@ public class StopsFragment extends Fragment {
     private void showResults() {
 
         Log.d(TAG, mJsonResult);
+        mProgressBar.setVisibility(View.GONE);
         Stops stops;
         Gson gson = new Gson();
         stops = gson.fromJson(mJsonResult, Stops.class);
